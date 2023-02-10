@@ -41,12 +41,12 @@
 			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
 		</svg>
 		<v-chip prepend-icon="mdi-bluetooth" color="success" v-if="isConnected">已连接本本</v-chip>
-		<v-chip prepend-icon="mdi-bluetooth-transfer" color="info" v-if="isActive">正在控制</v-chip>
+		<v-chip prepend-icon="mdi-bluetooth-transfer" color="info" v-if="isPending">正在控制</v-chip>
 	</div>
 </template>
 
 <script setup lang="ts" name="Mecanum">
-import { pausableWatch, useBluetooth, useIntervalFn } from '@vueuse/core'
+import { pausableWatch, useBluetooth, useIntervalFn, useTimeoutFn } from '@vueuse/core'
 const props = defineProps<{ power: { a: number, b: number, c: number, d: number }/*, bleStr: string*/ }>()
 const strokeH = (v: number) => {
 	const w = v * 42.5, d = Math.abs(w), o = v < 0 ? w : 0;
@@ -56,11 +56,11 @@ const strokeH = (v: number) => {
 	}
 }
 const bleStr = ref('')
-//ccd03a028080808080808080808080800c33
-//↑ccd03a02fefefe0280808080808080800833
-//→ccd03a0202fe020280808080808080801033
-//↓ccd03a02020202fe80808080808080801033
-//←ccd03a02fe02fefe80808080808080800833
+//ccd03a02 8080808080808080808080800c33
+//↑ccd03a02 fefefe0280808080808080800833
+//→ccd03a02 02fe020280808080808080801033
+//↓ccd03a02 020202fe80808080808080801033
+//←ccd03a02 fe02fefe80808080808080800833
 //右ccd03a02ff01010180808080808080800e33
 //左ccd03a0201ffffff80808080808080800a33
 let wheelDataInit = new Uint8Array([0xcc, 0xd0, 0x3a, 2, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x33])
@@ -71,6 +71,7 @@ function getWheelData({ a, b, c, d }: { a: number; b: number; c: number; d: numb
 		n += wheelDataInit[i];
 	}
 	wheelDataInit[l] = n;
+	console.log(wheelDataInit[l].toString(16))
 	return wheelDataInit;
 }
 const toHexString = (bytes: Uint8Array) =>
@@ -82,31 +83,48 @@ const {
 	requestDevice,
 	server,
 } = useBluetooth({
-	filters: [{
-		services: ["0000ae3a-0000-1000-8000-00805f9b34fb"]
-	}], optionalServices: ["0000ae3a-0000-1000-8000-00805f9b34fb"]
+	// filters: [{
+	// 	services: ["0000ae3a-0000-1000-8000-00805f9b34fb","0000af30-0000-1000-8000-00805f9b34fb"]
+	// }], 
+	acceptAllDevices: true,
+	optionalServices: ["0000ae3a-0000-1000-8000-00805f9b34fb"]
 })
-const { stop } = pausableWatch(isConnected, (newIsConnected) => {
+// const { stop } = 
+pausableWatch(isConnected, (newIsConnected) => {
+	console.log(newIsConnected, server.value)
 	if (!newIsConnected || !server.value)
 		return
 	runController();
 	//stop()
 })
-const { pause, resume, isActive } = useIntervalFn(async () => {
-	if(!isConnected.value){
-		pause();
-		bleStr.value=''
+// const { pause, resume, isActive } = useIntervalFn(async () => {
+// 	if(!isConnected.value){
+// 		pause();
+// 		bleStr.value=''
+// 		return;
+// 	}
+// 	const data=getWheelData(props.power);
+// 	await ControllerCharacteristic?.writeValue(data)
+// 	bleStr.value=toHexString(data)
+// }, 500)
+
+
+const { isPending, start, stop } = useTimeoutFn(async () => {
+	if (!isConnected.value) {
+		stop();
+		bleStr.value = ''
 		return;
 	}
-	const data=getWheelData(props.power);
+	const data = getWheelData(props.power);
 	await ControllerCharacteristic?.writeValue(data)
-	bleStr.value=toHexString(data)
+	bleStr.value = toHexString(data)
+	start();
 }, 10)
 let ControllerCharacteristic: BluetoothRemoteGATTCharacteristic | undefined
 const runController = async () => {
 	const ControllerService = await server.value?.getPrimaryService("0000ae3a-0000-1000-8000-00805f9b34fb")
 	ControllerCharacteristic = await ControllerService?.getCharacteristic('0000ae3b-0000-1000-8000-00805f9b34fb')
-	if(ControllerCharacteristic)resume()
+	if (ControllerCharacteristic) start()//resume()
 }
 </script>
 <style scoped lang='scss'>

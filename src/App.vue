@@ -9,9 +9,9 @@ const power = computed(() => controllerWheel(gamepad.value))
 function controllerWheel(gp: Gamepad) {
 	if (!isSupported || !gp) return { a: 0, b: 0, c: 0, d: 0 };
 	let x = gp.axes[0], y = gp.axes[1], rx = gp.axes[2]
-	x = Math.abs(x) >= 0.2 ? x * 1.1 : 0;
+	x = Math.abs(x) >= 0.2 ? -x * 1.1 : 0;
 	y = Math.abs(y) >= 0.2 ? y : 0
-	rx = Math.abs(rx) >= 0.2 ? rx : 0
+	rx = Math.abs(rx) >= 0.2 ? -rx : 0
 	const denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1),
 		b = (y + x + rx) / denominator,
 		c = (y - x + rx) / denominator,
