@@ -45,10 +45,12 @@
 		</svg>
 		<div>
 			<v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"></v-switch>
-			<v-switch v-model="isTest" color="info" hide-details inset label="测试模式" @change="if(isTest)resume();else pause()"></v-switch>
+			<v-switch v-model="isTest" color="info" hide-details inset label="测试模式"
+				@change="if (isTest) resume(); else pause()"></v-switch>
 		</div>
 		<v-chip :prepend-icon="mdiBluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
 		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
+		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="isOrientation && isTest">{{ alpha }}</v-chip>
 	</div>
 </template>
 
@@ -87,11 +89,11 @@ function addPower(n: number) {
 	n = n > 0 ? (n * 0.5 + 0.5) : (n * 0.5 - 0.5)
 	return n > 1 ? 1 : (n < -1 ? -1 : n)
 }
-const{pause,resume}=useIntervalFn(() => {
+const { pause, resume } = useIntervalFn(() => {
 	if (!props.gamepad) return;
 	power.value = controllerWheel();
 	bleStr.value = toHexString(getWheelData(power.value))
-}, 500,{immediate:false})
+}, 500, { immediate: false })
 const { alpha } = useDeviceOrientation()
 function controllerWheel() {
 	const gp = props.gamepad;
@@ -102,8 +104,9 @@ function controllerWheel() {
 	rx = Math.abs(rx) >= 0.2 ? -rx : 0
 	let rotX = x, rotY = y;
 	if (isOrientation.value) {
-		const botHeading = alpha.value;
+		let botHeading = alpha.value;
 		if (botHeading != null) {
+			botHeading*=2*Math.PI/360
 			rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
 			rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 		}
