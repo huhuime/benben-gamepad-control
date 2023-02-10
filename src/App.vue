@@ -7,6 +7,7 @@ const { isSupported, gamepads } = useGamepad()
 const gamepad: any = computed(() => gamepads.value.find(g => g.mapping === 'standard'))
 const power = computed(() => controllerWheel(gamepad.value))
 function addPower(n: number) {
+	if(n==0)return 0;
 	n = n > 0 ? (n * 0.5 + 0.5) : (n * 0.5 - 0.5)
 	return n > 1 ? 1 : (n < -1 ? -1 : n)
 }
