@@ -1,8 +1,10 @@
 <template>
 	<div>
 		<v-alert border="start" variant="tonal" text="等待连接笨笨" type="info" v-if="!isConnected">
-			<v-btn variant="tonal" density="compact" @click="requestDevice()">连接</v-btn>
+			<v-btn variant="tonal" density="compact"
+				@click="bleLoading = true; requestDevice().finally(() => bleLoading = false);" :loading="bleLoading">连接</v-btn>
 		</v-alert>
+		<v-alert border="start" variant="tonal" text="此浏览器不支持连接蓝牙设备" type="error" v-else-if="!isSupported"></v-alert>
 		<svg width="100%" height="100%" viewBox="0 0 600 230" version="1.1" id="mecanumSvg"
 			xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" class="text-info">
 			<g id="w-a" :class="power.a != 0 ? 'text-success' : ''">
@@ -40,8 +42,8 @@
 			</g>
 			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
 		</svg>
-		<v-chip prepend-icon="mdi-bluetooth" color="success" v-if="isConnected">已连接本本</v-chip>
-		<v-chip prepend-icon="mdi-bluetooth-transfer" color="info" v-if="isPending">正在控制</v-chip>
+		<v-chip prepend-icon="mdi-bluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
+		<v-chip prepend-icon="mdi-timer-outline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
 	</div>
 </template>
 
@@ -56,6 +58,8 @@ const strokeH = (v: number) => {
 	}
 }
 const bleStr = ref('')
+const bleTimeOut = ref(0)
+const bleLoading = ref(false)
 //ccd03a02 8080808080808080808080800c33
 //↑ccd03a02 fefefe0280808080808080800833
 //→ccd03a02 02fe020280808080808080801033
@@ -63,6 +67,7 @@ const bleStr = ref('')
 //←ccd03a02 fe02fefe80808080808080800833
 //右ccd03a02ff01010180808080808080800e33
 //左ccd03a0201ffffff80808080808080800a33
+
 let wheelDataInit = new Uint8Array([0xcc, 0xd0, 0x3a, 2, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x33])
 function getWheelData({ a, b, c, d }: { a: number; b: number; c: number; d: number; }) {
 	wheelDataInit.set([128 - a * 127, 128 - b * 127, 128 - c * 127, 128 + d * 127], 4)
@@ -97,27 +102,29 @@ pausableWatch(isConnected, (newIsConnected) => {
 	runController();
 	//stop()
 })
-// const { pause, resume, isActive } = useIntervalFn(async () => {
-// 	if(!isConnected.value){
-// 		pause();
-// 		bleStr.value=''
-// 		return;
-// 	}
-// 	const data=getWheelData(props.power);
-// 	await ControllerCharacteristic?.writeValue(data)
-// 	bleStr.value=toHexString(data)
-// }, 500)
-
-
+let isStop = false;
 const { isPending, start, stop } = useTimeoutFn(async () => {
 	if (!isConnected.value) {
 		stop();
-		bleStr.value = ''
+		bleStr.value = '';
+		bleTimeOut.value = 0;
 		return;
 	}
+	//停止后不再发出
+	if (props.power.a + props.power.b + props.power.c + props.power.d == 0) {
+		if (isStop) {
+			start();
+			return;
+		}
+		isStop = true;
+	} else {
+		isStop = false;
+	}
+	const t = Date.now();
 	const data = getWheelData(props.power);
 	await ControllerCharacteristic?.writeValue(data)
-	bleStr.value = toHexString(data)
+	bleStr.value = toHexString(data);
+	bleTimeOut.value = Date.now() - t;
 	start();
 }, 10)
 let ControllerCharacteristic: BluetoothRemoteGATTCharacteristic | undefined
