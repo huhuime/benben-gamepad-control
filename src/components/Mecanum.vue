@@ -1,8 +1,7 @@
 <template>
 	<div>
 		<v-alert border="start" variant="tonal" text="此浏览器不支持连接蓝牙设备" type="error" v-if="!isSupported"></v-alert>
-		<v-alert border="start" variant="tonal" text="等待连接笨笨" type="info"
-			v-else-if="!isConnected || bleLoading ">
+		<v-alert border="start" variant="tonal" text="等待连接笨笨" type="info" v-else-if="!isConnected || bleLoading">
 			<v-btn variant="tonal" density="compact"
 				@click="bleLoading = true; requestDevice().then(e => { if (!device) bleLoading = false }).catch(() => bleLoading = false);"
 				:loading="bleLoading">连接</v-btn>
@@ -44,15 +43,16 @@
 			</g>
 			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
 		</svg>
+		<div><v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"></v-switch></div>
 		<v-chip :prepend-icon="mdiBluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
 		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
 	</div>
 </template>
 
 <script setup lang="ts" name="Mecanum">
-import { pausableWatch, useBluetooth, useTimeoutFn } from '@vueuse/core'
+import { pausableWatch, useBluetooth, useTimeoutFn, useDeviceOrientation } from '@vueuse/core'
 import { mdiBluetooth, mdiTimerOutline } from '@mdi/js'
-const props = defineProps<{ power: { a: number, b: number, c: number, d: number }/*, bleStr: string*/ }>()
+const props = defineProps<{ gamepad: Gamepad }>()
 const strokeH = (v: number) => {
 	const w = v * 42.5, d = Math.abs(w), o = v < 0 ? w : 0;
 	return {
@@ -66,6 +66,7 @@ function log(e: any) {
 const bleStr = ref('')
 const bleTimeOut = ref(0)
 const bleLoading = ref(false)
+const isOrientation = ref(false)
 //ccd03a02 8080808080808080808080800c33
 //↑ccd03a02 fefefe0280808080808080800833
 //→ccd03a02 02fe020280808080808080801033
@@ -75,6 +76,36 @@ const bleLoading = ref(false)
 //左ccd03a0201ffffff80808080808080800a33
 
 let wheelDataInit = new Uint8Array([0xcc, 0xd0, 0x3a, 2, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x33])
+
+const power = ref({ a: 0, b: 0, c: 0, d: 0 })
+function addPower(n: number) {
+	if (n == 0) return 0;
+	n = n > 0 ? (n * 0.5 + 0.5) : (n * 0.5 - 0.5)
+	return n > 1 ? 1 : (n < -1 ? -1 : n)
+}
+const { alpha } = useDeviceOrientation()
+function controllerWheel() {
+	const gp = props.gamepad;
+	if (!isSupported || !gp) return { a: 0, b: 0, c: 0, d: 0 };
+	let x = gp.axes[0], y = gp.axes[1], rx = gp.axes[2]
+	x = Math.abs(x) >= 0.2 ? -x * 1.1 : 0;
+	y = Math.abs(y) >= 0.2 ? y : 0
+	rx = Math.abs(rx) >= 0.2 ? -rx : 0
+	let rotX = x, rotY = y;
+	if (isOrientation) {
+		const botHeading = alpha.value;
+		if (botHeading != null) {
+			rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+			rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+		}
+	}
+	const denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1),
+		b = addPower((rotY + rotX + rx) / denominator),
+		c = addPower((rotY - rotX + rx) / denominator),
+		a = addPower((rotY - rotX - rx) / denominator),
+		d = addPower((rotY + rotX - rx) / denominator);
+	return { a, b, c, d }
+}
 function getWheelData({ a, b, c, d }: { a: number; b: number; c: number; d: number; }) {
 	wheelDataInit.set([128 - a * 127, 128 - b * 127, 128 - c * 127, 128 + d * 127], 4)
 	let n = wheelDataInit[1], l = wheelDataInit.length - 2;
@@ -118,8 +149,9 @@ const { isPending, start, stop } = useTimeoutFn(async () => {
 	}
 	try {
 		const t = Date.now();
+		const p = controllerWheel();
 		//停止后不再发出
-		if (props.power.a == 0 && props.power.b == 0 && props.power.c == 0 && props.power.d == 0) {
+		if (p.a == 0 && p.b == 0 && p.c == 0 && p.d == 0) {
 			if (isStop) {
 				start();
 				return;
@@ -128,17 +160,17 @@ const { isPending, start, stop } = useTimeoutFn(async () => {
 		} else {
 			isStop = false;
 		}
-		const data = getWheelData(props.power);
+		const data = getWheelData(power.value);
 		await ControllerCharacteristic?.writeValue(data)
 		bleStr.value = toHexString(data);
 		bleTimeOut.value = Date.now() - t;
+		power.value = p;
 		start();
 	} catch (e) {
 		console.error(e);
 		stop();
 		bleStr.value = '';
 		bleTimeOut.value = 0;
-		//console.log(device.value?.gatt?.disconnect())
 		return;
 	}
 }, 10)
