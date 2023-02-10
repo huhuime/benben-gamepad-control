@@ -44,7 +44,7 @@
 			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
 		</svg>
 		<div>
-			<v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"></v-switch>
+			<v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向">{{alpha}}</v-switch>
 			<v-switch v-model="isTest" color="info" hide-details inset label="测试模式" @change="if(isTest)resume();else pause()"></v-switch>
 		</div>
 		<v-chip :prepend-icon="mdiBluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
