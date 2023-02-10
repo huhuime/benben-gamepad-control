@@ -12,3 +12,7 @@ https://huhuime.github.io/benben-gamepad-control/
 yarn
 yarn dev
 ```
+
+## 已知问题
+
+手机桥接蓝牙手臂控制下延迟较高
