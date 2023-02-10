@@ -43,14 +43,17 @@
 			</g>
 			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
 		</svg>
-		<div><v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"></v-switch></div>
+		<div>
+			<v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"></v-switch>
+			<v-switch v-model="isTest" color="info" hide-details inset label="测试模式" @change="if(isTest)resume();else pause()"></v-switch>
+		</div>
 		<v-chip :prepend-icon="mdiBluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
 		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
 	</div>
 </template>
 
 <script setup lang="ts" name="Mecanum">
-import { pausableWatch, useBluetooth, useTimeoutFn, useDeviceOrientation } from '@vueuse/core'
+import { pausableWatch, useBluetooth, useTimeoutFn, useDeviceOrientation, useIntervalFn } from '@vueuse/core'
 import { mdiBluetooth, mdiTimerOutline } from '@mdi/js'
 const props = defineProps<{ gamepad: Gamepad }>()
 const strokeH = (v: number) => {
@@ -67,6 +70,7 @@ const bleStr = ref('')
 const bleTimeOut = ref(0)
 const bleLoading = ref(false)
 const isOrientation = ref(false)
+const isTest = ref(false)
 //ccd03a02 8080808080808080808080800c33
 //↑ccd03a02 fefefe0280808080808080800833
 //→ccd03a02 02fe020280808080808080801033
@@ -83,6 +87,11 @@ function addPower(n: number) {
 	n = n > 0 ? (n * 0.5 + 0.5) : (n * 0.5 - 0.5)
 	return n > 1 ? 1 : (n < -1 ? -1 : n)
 }
+const{pause,resume}=useIntervalFn(() => {
+	if (!props.gamepad) return;
+	power.value = controllerWheel();
+	bleStr.value = toHexString(getWheelData(power.value))
+}, 500,{immediate:false})
 const { alpha } = useDeviceOrientation()
 function controllerWheel() {
 	const gp = props.gamepad;
