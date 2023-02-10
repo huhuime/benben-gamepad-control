@@ -172,7 +172,7 @@ const { isPending, start, stop } = useTimeoutFn(async () => {
 		} else {
 			isStop = false;
 		}
-		const data = getWheelData(power.value);
+		const data = getWheelData(p);
 		await ControllerCharacteristic?.writeValue(data)
 		bleStr.value = toHexString(data);
 		bleTimeOut.value = Date.now() - t;
