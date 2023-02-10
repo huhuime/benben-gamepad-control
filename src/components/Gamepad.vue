@@ -1,8 +1,7 @@
 <template>
 	<div>
-		<v-alert border="start" variant="tonal" text="按下手柄任意键连接手柄" type="info" v-if="!gamepad"></v-alert>
-
-		<v-alert border="start" variant="tonal" text="此浏览器不支持连接手柄" type="error" v-else-if="!isSupported"></v-alert>
+		<v-alert border="start" variant="tonal" text="此浏览器不支持连接手柄" type="error" v-if="!isSupported"></v-alert>
+		<v-alert border="start" variant="tonal" text="按下手柄任意键连接手柄" type="info" v-else-if="!gamepad"></v-alert>
 		<svg width="100%" height="100%" viewBox="0 0 600 230" version="1.1" id="gamepadSvg"
 			xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" class="text-info" v-else>
 			<g id="gamepad" inkscape:label="gamepad">

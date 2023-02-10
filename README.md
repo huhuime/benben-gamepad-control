@@ -16,3 +16,4 @@ yarn dev
 ## 已知问题
 
 手机桥接蓝牙手臂控制下延迟较高
+因ongattserverdisconnected问题导致蓝牙断开响应过慢

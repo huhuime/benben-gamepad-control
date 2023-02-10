@@ -1,10 +1,12 @@
 <template>
 	<div>
-		<v-alert border="start" variant="tonal" text="等待连接笨笨" type="info" v-if="!isConnected">
+		<v-alert border="start" variant="tonal" text="此浏览器不支持连接蓝牙设备" type="error" v-if="!isSupported"></v-alert>
+		<v-alert border="start" variant="tonal" text="等待连接笨笨" type="info"
+			v-else-if="!isConnected || bleLoading ">
 			<v-btn variant="tonal" density="compact"
-				@click="bleLoading = true; requestDevice().finally(() => bleLoading = false);" :loading="bleLoading">连接</v-btn>
+				@click="bleLoading = true; requestDevice().then(e => { if (!device) bleLoading = false }).catch(() => bleLoading = false);"
+				:loading="bleLoading">连接</v-btn>
 		</v-alert>
-		<v-alert border="start" variant="tonal" text="此浏览器不支持连接蓝牙设备" type="error" v-else-if="!isSupported"></v-alert>
 		<svg width="100%" height="100%" viewBox="0 0 600 230" version="1.1" id="mecanumSvg"
 			xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" class="text-info">
 			<g id="w-a" :class="power.a != 0 ? 'text-success' : ''">
@@ -42,13 +44,14 @@
 			</g>
 			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
 		</svg>
-		<v-chip prepend-icon="mdi-bluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
-		<v-chip prepend-icon="mdi-timer-outline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
+		<v-chip :prepend-icon="mdiBluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
+		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
 	</div>
 </template>
 
 <script setup lang="ts" name="Mecanum">
-import { pausableWatch, useBluetooth, useIntervalFn, useTimeoutFn } from '@vueuse/core'
+import { pausableWatch, useBluetooth, useTimeoutFn } from '@vueuse/core'
+import { mdiBluetooth, mdiTimerOutline } from '@mdi/js'
 const props = defineProps<{ power: { a: number, b: number, c: number, d: number }/*, bleStr: string*/ }>()
 const strokeH = (v: number) => {
 	const w = v * 42.5, d = Math.abs(w), o = v < 0 ? w : 0;
@@ -56,6 +59,9 @@ const strokeH = (v: number) => {
 		strokeDasharray: d + ',' + (85 - d),
 		strokeDashoffset: 42.5 - o
 	}
+}
+function log(e: any) {
+	console.log(e, 'log')
 }
 const bleStr = ref('')
 const bleTimeOut = ref(0)
@@ -88,10 +94,10 @@ const {
 	requestDevice,
 	server,
 } = useBluetooth({
-	// filters: [{
-	// 	services: ["0000ae3a-0000-1000-8000-00805f9b34fb","0000af30-0000-1000-8000-00805f9b34fb"]
-	// }], 
-	acceptAllDevices: true,
+	filters: [{
+		services: ["0000af30-0000-1000-8000-00805f9b34fb"]
+	}],
+	// acceptAllDevices: true,
 	optionalServices: ["0000ae3a-0000-1000-8000-00805f9b34fb"]
 })
 // const { stop } = 
@@ -110,28 +116,50 @@ const { isPending, start, stop } = useTimeoutFn(async () => {
 		bleTimeOut.value = 0;
 		return;
 	}
-	//停止后不再发出
-	if (props.power.a + props.power.b + props.power.c + props.power.d == 0) {
-		if (isStop) {
-			start();
-			return;
+	try {
+		const t = Date.now();
+		//停止后不再发出
+		if (props.power.a == 0 && props.power.b == 0 && props.power.c == 0 && props.power.d == 0) {
+			if (isStop) {
+				start();
+				return;
+			}
+			isStop = true;
+		} else {
+			isStop = false;
 		}
-		isStop = true;
-	} else {
-		isStop = false;
+		const data = getWheelData(props.power);
+		await ControllerCharacteristic?.writeValue(data)
+		bleStr.value = toHexString(data);
+		bleTimeOut.value = Date.now() - t;
+		start();
+	} catch (e) {
+		console.error(e);
+		stop();
+		bleStr.value = '';
+		bleTimeOut.value = 0;
+		//console.log(device.value?.gatt?.disconnect())
+		return;
 	}
-	const t = Date.now();
-	const data = getWheelData(props.power);
-	await ControllerCharacteristic?.writeValue(data)
-	bleStr.value = toHexString(data);
-	bleTimeOut.value = Date.now() - t;
-	start();
 }, 10)
 let ControllerCharacteristic: BluetoothRemoteGATTCharacteristic | undefined
 const runController = async () => {
-	const ControllerService = await server.value?.getPrimaryService("0000ae3a-0000-1000-8000-00805f9b34fb")
-	ControllerCharacteristic = await ControllerService?.getCharacteristic('0000ae3b-0000-1000-8000-00805f9b34fb')
-	if (ControllerCharacteristic) start()//resume()
+	try {
+		const ControllerService = await server.value?.getPrimaryService("0000ae3a-0000-1000-8000-00805f9b34fb")
+		ControllerCharacteristic = await ControllerService?.getCharacteristic('0000ae3b-0000-1000-8000-00805f9b34fb')
+		if (ControllerCharacteristic) {
+			start()//resume()
+			console.log(device.value)
+			if (device.value) device.value.ongattserverdisconnected = () => {
+				device.value = undefined;
+				server.value = undefined;
+			}
+		}
+	} catch (e) {
+		console.error(e)
+	} finally {
+		bleLoading.value = false;
+	}
 }
 </script>
 <style scoped lang='scss'>

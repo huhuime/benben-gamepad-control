@@ -350,10 +350,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@mdi/font@^7.1.96":
+"@mdi/js@^7.1.96":
   version "7.1.96"
-  resolved "https://mirrors.cloud.tencent.com/npm/@mdi%2ffont/-/font-7.1.96.tgz#211ca4acfa31964278e5085de595e8c73967d400"
-  integrity sha512-Imag6npmfkBDi2Ze2jiZVAPTDIKLxhz2Sx82xJ2zctyAU5LYJejLI5ChnDwiD9bMkQfVuzEsI98Q8toHyC+HCg==
+  resolved "https://mirrors.cloud.tencent.com/npm/@mdi%2fjs/-/js-7.1.96.tgz#9c5a7f8a20ea63c03b09a0dba1768fe8b70eeaf9"
+  integrity sha512-wlrJs6Ryhaa5CqhK3FjTfMRnb/s7HeLkKMFqwQySkK86cdN1TGdzpSM3O4tsmzCA1dYBeTbXvOwSE/Y42cUrvA==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
