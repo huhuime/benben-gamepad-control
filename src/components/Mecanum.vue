@@ -101,7 +101,7 @@ function controllerWheel() {
 	y = Math.abs(y) >= 0.2 ? y : 0
 	rx = Math.abs(rx) >= 0.2 ? -rx : 0
 	let rotX = x, rotY = y;
-	if (isOrientation) {
+	if (isOrientation.value) {
 		const botHeading = alpha.value;
 		if (botHeading != null) {
 			rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
