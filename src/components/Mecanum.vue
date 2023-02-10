@@ -106,7 +106,7 @@ function controllerWheel() {
 	if (isOrientation.value) {
 		let botHeading = alpha.value;
 		if (botHeading != null) {
-			botHeading*=2*Math.PI/360
+			botHeading *= 2 * Math.PI / 360
 			rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
 			rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 		}
