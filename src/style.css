@@ -1,3 +1,7 @@
-:root{
+:root {
 	--v-theme-overlay-multiplier: 1;
+}
+
+body {
+	margin: 0;
 }

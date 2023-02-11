@@ -6,58 +6,58 @@
 				@click="bleLoading = true; requestDevice().then(e => { if (!device) bleLoading = false }).catch(() => bleLoading = false);"
 				:loading="bleLoading">连接</v-btn>
 		</v-alert>
-		<svg width="100%" height="100%" viewBox="0 0 600 230" version="1.1" id="mecanumSvg"
-			xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" class="text-info">
-			<g id="w-a" :class="power.a != 0 ? 'text-success' : ''">
-				<rect width="50" height="100" x="10" y="10" ry="10" />
-				<path d="M 60,20 L 10,40 L 60,40,L 10,60 L 60,60 L 10,80 L 60,80 L 10,100" class="wheel" />
-				<path d="M 77.5,17.5 v 85" class="path" />
-				<path d="M 77.5,17.5 v 85" class="path-h" :style="strokeH(power.a)" />
-				<text x="93.5" y="34">A</text>
-				<text x="93.5" y="64" class="subtitle">{{(power.a * 127).toFixed(0)}}</text>
-			</g>
-			<g id="w-d" :class="power.d != 0 ? 'text-success' : ''">
-				<rect width="50" height="100" x="10" y="120" ry="10" />
-				<path d="M 10,130 L 60,150 L 10,150,L 60,170 L 10,170 L 60,190 L 10,190 L 60,210" class="wheel" />
-				<path d="M 77.5,127.5 v 85" class="path" />
-				<path d="M 77.5,127.5 v 85" class="path-h" :style="strokeH(power.d)" />
-				<text x="93.5" y="144">D</text>
-				<text x="93.5" y="174" class="subtitle">{{(power.d * 127).toFixed(0)}}</text>
-			</g>
-			<g id="w-b" :class="power.b != 0 ? 'text-success' : ''">
-				<rect width="50" height="100" x="540" y="10" ry="10" />
-				<path d="M 540,20 L 590,40 L 540,40,L 590,60 L 540,60 L 590,80 L 540,80 L 590,100" class="wheel" />
-				<path d="M 522.5,17.5 v 85" class="path" />
-				<path d="M 522.5,17.5 v 85" class="path-h" :style="strokeH(power.b)" />
-				<text x="506.5" y="34" class="right">B</text>
-				<text x="506.5" y="64" class="subtitle right">{{(power.b * 127).toFixed(0)}}</text>
-			</g>
-			<g id="w-c" :class="power.c != 0 ? 'text-success' : ''">
-				<rect width="50" height="100" x="540" y="120" ry="10" />
-				<path d="M 590,130 L 540,150 L 590,150,L 540,170 L 590,170 L 540,190 L 590,190 L 540,210"
-					class="wheel" />
-				<path d="M 522.5,127.5 v 85" class="path" />
-				<path d="M 522.5,127.5 v 85" class="path-h" :style="strokeH(power.c)" />
-				<text x="506.5" y="144" class="right">C</text>
-				<text x="506.5" y="174" class="subtitle right">{{(power.c * 127).toFixed(0) }}</text>
-			</g>
-			<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{ bleStr }}</text>
-		</svg>
-		<div>
-			<v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"></v-switch>
-			<v-switch v-model="isTest" color="info" hide-details inset label="测试模式"
-				@change="if (isTest) resume(); else pause()"></v-switch>
-		</div>
+		<transition name="slide-y-transition">
+			<svg width="100%" height="100%" viewBox="0 0 600 230" version="1.1" id="mecanumSvg"
+				xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" class="text-info"
+				v-show="isConnected || isTest">
+				<g id="w-a" :class="power.a != 0 ? 'text-success' : ''">
+					<rect width="50" height="100" x="10" y="10" ry="10" />
+					<path d="M 60,20 L 10,40 L 60,40,L 10,60 L 60,60 L 10,80 L 60,80 L 10,100" class="wheel" />
+					<path d="M 77.5,17.5 v 85" class="path" />
+					<path d="M 77.5,17.5 v 85" class="path-h" :style="strokeH(power.a)" />
+					<text x="93.5" y="34">A</text>
+					<text x="93.5" y="64" class="subtitle">{{(power.a * 127).toFixed(0)}}</text>
+				</g>
+				<g id="w-d" :class="power.d != 0 ? 'text-success' : ''">
+					<rect width="50" height="100" x="10" y="120" ry="10" />
+					<path d="M 10,130 L 60,150 L 10,150,L 60,170 L 10,170 L 60,190 L 10,190 L 60,210" class="wheel" />
+					<path d="M 77.5,127.5 v 85" class="path" />
+					<path d="M 77.5,127.5 v 85" class="path-h" :style="strokeH(power.d)" />
+					<text x="93.5" y="144">D</text>
+					<text x="93.5" y="174" class="subtitle">{{(power.d * 127).toFixed(0)}}</text>
+				</g>
+				<g id="w-b" :class="power.b != 0 ? 'text-success' : ''">
+					<rect width="50" height="100" x="540" y="10" ry="10" />
+					<path d="M 540,20 L 590,40 L 540,40,L 590,60 L 540,60 L 590,80 L 540,80 L 590,100" class="wheel" />
+					<path d="M 522.5,17.5 v 85" class="path" />
+					<path d="M 522.5,17.5 v 85" class="path-h" :style="strokeH(power.b)" />
+					<text x="506.5" y="34" class="right">B</text>
+					<text x="506.5" y="64" class="subtitle right">{{(power.b * 127).toFixed(0)}}</text>
+				</g>
+				<g id="w-c" :class="power.c != 0 ? 'text-success' : ''">
+					<rect width="50" height="100" x="540" y="120" ry="10" />
+					<path d="M 590,130 L 540,150 L 590,150,L 540,170 L 590,170 L 540,190 L 590,190 L 540,210"
+						class="wheel" />
+					<path d="M 522.5,127.5 v 85" class="path" />
+					<path d="M 522.5,127.5 v 85" class="path-h" :style="strokeH(power.c)" />
+					<text x="506.5" y="144" class="right">C</text>
+					<text x="506.5" y="174" class="subtitle right">{{(power.c * 127).toFixed(0) }}</text>
+				</g>
+				<text x="300" y="115" class="subtitle middle" style="font-size: 19px; stroke-width: 1;">{{
+					bleStr
+				}}</text>
+			</svg>
+		</transition>
 		<v-chip :prepend-icon="mdiBluetooth" color="success" v-if="isConnected">已连接笨笨({{ device?.name }})</v-chip>
 		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="bleTimeOut > 0">{{ bleTimeOut }}ms</v-chip>
-		<v-chip :prepend-icon="mdiTimerOutline" color="info" v-if="isOrientation && isTest">{{ alpha }}</v-chip>
+		<v-chip :prepend-icon="mdiRotate360" color="info" v-if="isOrientation && isTest">{{ alpha.toFixed(2) }}</v-chip>
 	</div>
 </template>
 
 <script setup lang="ts" name="Mecanum">
 import { pausableWatch, useBluetooth, useTimeoutFn, useDeviceOrientation, useIntervalFn } from '@vueuse/core'
-import { mdiBluetooth, mdiTimerOutline } from '@mdi/js'
-const props = defineProps<{ gamepad: Gamepad }>()
+import { mdiBluetooth, mdiTimerOutline,mdiRotate360 } from '@mdi/js'
+const { gamepad, isOrientation, isTest, alpha } = defineProps<{ gamepad: Gamepad, isOrientation: boolean, isTest: boolean, alpha: number }>()
 const strokeH = (v: number) => {
 	const w = v * 42.5, d = Math.abs(w), o = v < 0 ? w : 0;
 	return {
@@ -71,8 +71,10 @@ function log(e: any) {
 const bleStr = ref('')
 const bleTimeOut = ref(0)
 const bleLoading = ref(false)
-const isOrientation = ref(false)
-const isTest = ref(false)
+watch(() => isTest, v => {
+	if (v) resume();
+	else pause();
+})
 //ccd03a02 8080808080808080808080800c33
 //↑ccd03a02 fefefe0280808080808080800833
 //→ccd03a02 02fe020280808080808080801033
@@ -90,21 +92,19 @@ function addPower(n: number) {
 	return n > 1 ? 1 : (n < -1 ? -1 : n)
 }
 const { pause, resume } = useIntervalFn(() => {
-	if (!props.gamepad) return;
+	if (!gamepad) return;
 	power.value = controllerWheel();
 	bleStr.value = toHexString(getWheelData(power.value))
 }, 500, { immediate: false })
-const { alpha } = useDeviceOrientation()
 function controllerWheel() {
-	const gp = props.gamepad;
-	if (!isSupported || !gp) return { a: 0, b: 0, c: 0, d: 0 };
-	let x = gp.axes[0], y = gp.axes[1], rx = gp.axes[2]
+	if (!isSupported || !gamepad) return { a: 0, b: 0, c: 0, d: 0 };
+	let x = gamepad.axes[0], y = gamepad.axes[1], rx = gamepad.axes[2]
 	x = Math.abs(x) >= 0.2 ? -x * 1.1 : 0;
 	y = Math.abs(y) >= 0.2 ? y : 0
 	rx = Math.abs(rx) >= 0.2 ? -rx : 0
 	let rotX = x, rotY = y;
-	if (isOrientation.value) {
-		let botHeading = alpha.value;
+	if (isOrientation) {
+		let botHeading = alpha;
 		if (botHeading != null) {
 			botHeading *= 2 * Math.PI / 360
 			rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
