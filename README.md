@@ -4,7 +4,7 @@
 
 ## DOME
 
-https://huhuime.github.io/benben-gamepad-control/
+https://huhuime.gitlab.io/benben-gamepad-control/
 
 ## 运行
 
