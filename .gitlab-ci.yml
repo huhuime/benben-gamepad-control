@@ -1,12 +1,2 @@
 # The Docker image that will be used to build your app
 image: benben
-pages:
-stage: build
-script:
-- echo "Copying docs dic..."
-- echo $(pwd)
-artifacts:
-paths:
-- docs
-only:
-- master
