@@ -1,2 +1,9 @@
 # The Docker image that will be used to build your app
 image: benben
+pages:
+  stage: deploy
+  artifacts:
+    paths:
+      - docs
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
