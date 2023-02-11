@@ -56,8 +56,8 @@
 
 <script setup lang="ts" name="Mecanum">
 import { pausableWatch, useBluetooth, useTimeoutFn, useDeviceOrientation, useIntervalFn } from '@vueuse/core'
-import { mdiBluetooth, mdiTimerOutline,mdiRotate360 } from '@mdi/js'
-const { gamepad, isOrientation, isTest, alpha } = defineProps<{ gamepad: Gamepad, isOrientation: boolean, isTest: boolean, alpha: number }>()
+import { mdiBluetooth, mdiTimerOutline, mdiRotate360 } from '@mdi/js'
+const props = defineProps<{ gamepad: Gamepad, isOrientation: boolean, isTest: boolean, alpha: number }>();
 const strokeH = (v: number) => {
 	const w = v * 42.5, d = Math.abs(w), o = v < 0 ? w : 0;
 	return {
@@ -71,7 +71,7 @@ function log(e: any) {
 const bleStr = ref('')
 const bleTimeOut = ref(0)
 const bleLoading = ref(false)
-watch(() => isTest, v => {
+watch(() => props.isTest, v => {console.log(v)
 	if (v) resume();
 	else pause();
 })
@@ -92,19 +92,19 @@ function addPower(n: number) {
 	return n > 1 ? 1 : (n < -1 ? -1 : n)
 }
 const { pause, resume } = useIntervalFn(() => {
-	if (!gamepad) return;
+	if (!props.gamepad) return;
 	power.value = controllerWheel();
 	bleStr.value = toHexString(getWheelData(power.value))
 }, 500, { immediate: false })
 function controllerWheel() {
-	if (!isSupported || !gamepad) return { a: 0, b: 0, c: 0, d: 0 };
-	let x = gamepad.axes[0], y = gamepad.axes[1], rx = gamepad.axes[2]
+	if (!isSupported || !props.gamepad) return { a: 0, b: 0, c: 0, d: 0 };
+	let x = props.gamepad.axes[0], y = props.gamepad.axes[1], rx = props.gamepad.axes[2]
 	x = Math.abs(x) >= 0.2 ? -x * 1.1 : 0;
 	y = Math.abs(y) >= 0.2 ? y : 0
 	rx = Math.abs(rx) >= 0.2 ? -rx : 0
 	let rotX = x, rotY = y;
-	if (isOrientation) {
-		let botHeading = alpha;
+	if (props.isOrientation) {
+		let botHeading = props.alpha;
 		if (botHeading != null) {
 			botHeading *= 2 * Math.PI / 360
 			rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
