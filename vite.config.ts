@@ -16,6 +16,7 @@ export default defineConfig({
 	],
 	base: './',
 	build: {
-		outDir: './docs'
-	}
+		outDir: './public'
+	},
+	publicDir:'res'
 })
