@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BenBen from './components/BenBen.vue';
 import Gamepad from './components/Gamepad.vue';
 import Mecanum from './components/Mecanum.vue';
 import Orientation from './components/Orientation.vue';
@@ -12,7 +13,8 @@ const gamepad: any = computed(() => gamepads.value.find(g => g.mapping === 'stan
 <template>
 	<v-app>
 		<v-main>
-			<v-row justify="center" class="row">
+			<BenBen :gamepad="gamepad" />
+			<v-row justify="center" class="row" v-if="false">
 				<v-col class="v-col-xs-12" xs="12" sm="6" md="4">
 					<v-sheet>
 						<Gamepad :gamepad="gamepad" />
@@ -43,10 +45,11 @@ const gamepad: any = computed(() => gamepads.value.find(g => g.mapping === 'stan
 </template>
 
 <style scoped lang="scss">
-.row{
+.row {
 	max-width: 1600px;
 	margin: 0 auto;
 }
+
 // .v-col-xs-12 {
 // 	.v-sheet {
 // 		padding: 2px;

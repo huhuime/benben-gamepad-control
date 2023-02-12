@@ -1,0 +1,22 @@
+{
+	"id": "/",
+	"name": "笨笨手柄控制器",
+	"short_name": "笨笨手柄控制器",
+	"start_url": ".",
+	"url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#fff",
+	"description": "用手柄控制笨笨，支持移动设备躺平在笨笨上感知方向",
+	"icons": [
+		{
+			"src": "logo.svg",
+			"type": "image/svg+xml"
+		}
+	],
+	"related_applications": [
+		{
+			"platform": "web"
+		}
+	]
+}
