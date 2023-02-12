@@ -13,10 +13,5 @@
 			"src": "logo.svg",
 			"type": "image/svg+xml"
 		}
-	],
-	"related_applications": [
-		{
-			"platform": "web"
-		}
 	]
 }
