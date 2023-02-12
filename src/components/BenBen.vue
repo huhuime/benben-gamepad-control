@@ -234,6 +234,9 @@ const strokeH = (v: number) => {
 		strokeDashoffset: 21.84295082092285 - o
 	}
 }
+watch(() => props.gamepad?.buttons[0].pressed, v => {
+	if (v) setRectify();
+})
 function setRectify() {
 	if (isOrientation) rectify.value = alpha.value || 0;
 	else rectify.value = 0
