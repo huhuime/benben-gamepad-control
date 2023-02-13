@@ -1,23 +1,62 @@
 <template>
 	<div>
+		<v-toolbar class="toolbar" density="compact" v-if="!isShowNav">
+			<v-row no-gutters justify="center" class="v-btn-group v-btn-group--density-default v-btn-toggle">
+				<v-btn color="teal" :variant="isOrientation ? 'flat' : 'text'"
+					@click="isOrientation = !isOrientation; setRectify(); isOrientationBanner = isOrientation">
+					<template v-slot:prepend>
+						<v-icon class="prepend" :icon="isOrientation ? mdiCompass : mdiCompassOffOutline"></v-icon>
+					</template>
+					{{ isOrientation?'感知中': '开启移动设备感知方向' }}
+				</v-btn>
+				<v-btn v-if="isOrientation" variant="tonal" color="teal" @click="setRectify">
+					<template v-slot:prepend>
+						<v-icon class="prepend" :icon="mdiGamepadCircleDown"></v-icon>
+					</template>
+					重置方向传感器或按
+					<v-icon :icon="mdiAlphaACircleOutline" size="small"></v-icon>
+				</v-btn>
+				<v-btn color="cyan" :variant="isTest ? 'flat' : 'text'" @click="isTest = !isTest; setTest(isTest)">
+					<template v-slot:prepend>
+						<v-icon class="prepend" :icon="isTest ? mdiBug : mdiBugOutline"></v-icon>
+					</template>
+					测试模式
+				</v-btn>
+			</v-row>
+		</v-toolbar>
+		<div class="nav" v-if="isShowNav">
+			<div class="text-teal">
+				<v-btn color="teal" :variant="isOrientation ? 'elevated' : 'tonal'"
+					:icon="isOrientation ? mdiCompass : mdiCompassOffOutline"
+					@click="isOrientation = !isOrientation; setRectify(); isOrientationBanner = isOrientation">
+				</v-btn>
+				{{ isOrientation?'感知中': '开启移动设备感知方向' }}
+			</div>
+			<div v-if="isOrientation" class="text-teal">
+				<v-btn variant="tonal" color="teal" @click="setRectify" :icon="mdiGamepadCircleDown">
+				</v-btn>
+				重置方向传感器或按<v-icon :icon="mdiAlphaACircleOutline" size="small"></v-icon>
+			</div>
+			<div class="text-cyan">
+				<v-btn color="cyan" :variant="isTest ? 'elevated' : 'tonal'" :icon="isTest ? mdiBug : mdiBugOutline"
+					@click="isTest = !isTest; setTest(isTest)">
+				</v-btn>
+				测试模式
+			</div>
+		</div>
 		<v-banner v-if="isOrientationBanner && !yetIsOrientationBanner" color="teal" :icon="mdiController" sticky
-			style="z-index: 999;">
-			<template v-slot:prepend>
-				<v-avatar></v-avatar>
-			</template>
-
+			:style="{ zIndex: 999, top: (isShowNav ? 0 : 48) + 'px' }">
 			<v-banner-text>
-				使用移动设备躺平在笨笨需按如图<b
-					class="text-teal">此颜色</b>放置移动设备,手柄与笨笨头朝向一致后重置方向传感器,之后朝向方向不得改变（因未获取手柄传感器），如需改变则进行如上操作重置方向传感器。
+				使用移动设备躺平在笨笨需按如图<b class="text-teal">此颜色<v-icon :icon="mdiCellphone"
+						size="small"></v-icon></b>放置移动设备,手柄与笨笨头朝向一致后重置方向传感器,之后手柄朝向方向不改变（因未获取手柄传感器）左摇杆可指哪走哪不用在意笨笨头朝哪，如需改变则进行如上操作重置方向传感器。
 			</v-banner-text>
-
 			<v-banner-actions>
 				<v-btn variant="outlined" @click="setRectify">重置方向传感器</v-btn>
 				<v-btn variant="plain" @click="yetIsOrientationBanner = true">不在提醒</v-btn>
 				<v-btn @click="isOrientationBanner = false">稍后</v-btn>
 			</v-banner-actions>
 		</v-banner>
-		<div class="benben">
+		<v-row no-gutters align="center" justify="center" class="benben">
 			<svg width="100%" height="100%" viewBox="0 0 264.58333 264.58333" version="1.1" id="benben"
 				class="text-info" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
 				<g class="platform"
@@ -180,26 +219,21 @@
 						:loading="bleLoading">连接</v-btn>
 				</v-alert>
 			</div>
-		</div>
-		<v-row no-gutters align="center">
-			<v-col cols="auto"><v-switch v-model="isOrientation" color="info" hide-details inset label="移动设备躺平在笨笨上确定方向"
-					@change="setRectify(); isOrientationBanner = isOrientation"></v-switch></v-col>
-			<v-col><v-switch v-model="isTest" color="info" hide-details inset label="测试模式"
-					@change="setTest(isTest)"></v-switch></v-col>
-			<v-col v-if="isOrientation"><v-btn :prependIcon="mdiGamepadCircleDown" color="teal"
-					@click="setRectify">重置方向传感器或按
-					<v-icon :icon="mdiAlphaACircleOutline" size="small"></v-icon>
-				</v-btn></v-col>
 		</v-row>
-
 	</div>
 </template>
 
 <script setup lang="ts" name="BenBen">
-import { useScreenOrientation, useDeviceOrientation, useBluetooth, pausableWatch, useTimeoutFn, useIntervalFn, useLocalStorage } from '@vueuse/core'
-import { mdiController, mdiGamepadCircleDown, mdiAlphaACircleOutline } from '@mdi/js'
+import { useScreenOrientation, useDeviceOrientation, useBluetooth, pausableWatch, useTimeoutFn, useIntervalFn, useLocalStorage, useWindowSize } from '@vueuse/core'
+import { mdiController, mdiGamepadCircleDown, mdiAlphaACircleOutline, mdiCellphone, mdiCompassOffOutline, mdiBugOutline, mdiCompass, mdiBug } from '@mdi/js'
 const isGamepadSupported = typeof (navigator.getGamepads) === 'function'
-const { isSupported, orientation, angle } = useScreenOrientation()
+const { angle } = useScreenOrientation()
+const { width, height } = useWindowSize()
+const isShowNav = computed(() => {
+	if (height.value >= (700 + 48 * 2)) return false;
+	if (height.value >= (width.value + 48 * 2)) return false;
+	return true;
+})
 const { alpha } = useDeviceOrientation()
 const {
 	isSupported: isBluetoothSupported,
@@ -248,6 +282,7 @@ function getPointer(isOrientation: boolean, alpha: number | null, rectify: numbe
 function getRunAngle(angle: number) {
 	switch (angle) {
 		case 90: return [90, 180, 270, 0]
+		case 180: return [0, 90, 180, 270]
 		case -90:
 		case 270: return [270, 0, 90, 180]
 		case 0:
@@ -394,8 +429,44 @@ const runController = async () => {
 }
 </script>
 <style scoped lang='scss'>
+.toolbar {
+	position: fixed;
+	top: 0;
+	z-index: 9999;
+	width: 100%;
+
+	.v-btn--variant-elevated {
+		background-color: transparent;
+	}
+
+	.v-btn.v-btn--density-default {
+		height: auto;
+	}
+
+	.v-btn--size-default {
+		padding: 0 8px 0 10px;
+	}
+
+	.prepend {
+		margin-right: -6px;
+		margin-bottom: -2px;
+	}
+}
+
+.nav {
+	position: fixed;
+	transform: top .5s;
+	bottom: 0;
+	left: 8px;
+	z-index: 9999;
+
+	&>div {
+		margin-bottom: 8px;
+	}
+}
+
 .tips {
-	width: calc(min(100vh, 700px, 100vw) - 20%);
+	width: calc(min(100vh, 700px, 100vw) * 0.8);
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -414,8 +485,11 @@ const runController = async () => {
 
 .benben {
 	position: relative;
-	width: min(100vh, 700px, 100vw);
-	margin: 0 auto;
+	height: 100vh;
+
+	&>svg {
+		width: min(100vh, 700px, 100vw);
+	}
 }
 
 #benben {
