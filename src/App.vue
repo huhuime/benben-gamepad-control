@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import BenBen from './components/BenBen.vue';
-import Gamepad from './components/Gamepad.vue';
-import Mecanum from './components/Mecanum.vue';
-import Orientation from './components/Orientation.vue';
+// import Gamepad from './components/Gamepad.vue';
+// import Mecanum from './components/Mecanum.vue';
+// import Orientation from './components/Orientation.vue';
 
 import { useGamepad, useDeviceOrientation } from '@vueuse/core'
 const { isSupported, gamepads } = useGamepad()
@@ -14,7 +14,7 @@ const gamepad: any = computed(() => gamepads.value.find(g => g.mapping === 'stan
 	<v-app>
 		<v-main>
 			<BenBen :gamepad="gamepad" />
-			<v-row justify="center" class="row" v-if="false">
+			<!-- <v-row justify="center" class="row" v-if="false">
 				<v-col class="v-col-xs-12" xs="12" sm="6" md="4">
 					<v-sheet>
 						<Gamepad :gamepad="gamepad" />
@@ -39,7 +39,7 @@ const gamepad: any = computed(() => gamepads.value.find(g => g.mapping === 'stan
 						<v-switch v-model="isTest" color="info" hide-details inset label="测试模式"></v-switch>
 					</v-row>
 				</v-col>
-			</v-row>
+			</v-row> -->
 		</v-main>
 	</v-app>
 </template>

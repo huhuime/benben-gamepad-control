@@ -107,7 +107,7 @@
 								</g>
 								<g id="R" transform="matrix(1,0,0,-1,4.8634301e-5,267.40322)">
 									<circle cx="152.13542" cy="99.21875" r="19.7024" />
-									<circle id="r" :cx="152.13542 - (gamepad?.axes[3] || 0) * 10"
+									<circle id="r" :cx="152.13542 + (gamepad?.axes[3] || 0) * 10"
 										:cy="99.21875 + (gamepad?.axes[2] || 0) * 10" r="13.923029" />
 								</g>
 							</g>
