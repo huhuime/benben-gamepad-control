@@ -16,7 +16,7 @@
 					重置方向传感器或按
 					<v-icon :icon="mdiAlphaACircleOutline" size="small"></v-icon>
 				</v-btn>
-				<v-btn color="cyan" :variant="isTest ? 'flat' : 'text'" @click="isTest = !isTest; setTest(isTest)">
+				<v-btn color="cyan" :variant="isTest ? 'flat' : 'text'" @click="isTest = !isTest;">
 					<template v-slot:prepend>
 						<v-icon class="prepend" :icon="isTest ? mdiBug : mdiBugOutline"></v-icon>
 					</template>
@@ -25,24 +25,20 @@
 			</v-row>
 		</v-toolbar>
 		<div class="nav" v-if="isShowNav">
-			<div class="text-teal">
+			<v-btn color="teal" variant="text" rounded
+				@click="isOrientation = !isOrientation; setRectify(); isOrientationBanner = isOrientation">
 				<v-btn color="teal" :variant="isOrientation ? 'elevated' : 'tonal'"
-					:icon="isOrientation ? mdiCompass : mdiCompassOffOutline"
-					@click="isOrientation = !isOrientation; setRectify(); isOrientationBanner = isOrientation">
-				</v-btn>
+					:icon="isOrientation ? mdiCompass : mdiCompassOffOutline" />
 				{{ isOrientation?'感知中': '开启移动设备感知方向' }}
-			</div>
-			<div v-if="isOrientation" class="text-teal">
-				<v-btn variant="tonal" color="teal" @click="setRectify" :icon="mdiGamepadCircleDown">
-				</v-btn>
+			</v-btn>
+			<v-btn v-if="isOrientation" variant="text" color="teal" @click="setRectify" rounded>
+				<v-btn variant="tonal" color="teal" :icon="mdiGamepadCircleDown" />
 				重置方向传感器或按<v-icon :icon="mdiAlphaACircleOutline" size="small"></v-icon>
-			</div>
-			<div class="text-cyan">
-				<v-btn color="cyan" :variant="isTest ? 'elevated' : 'tonal'" :icon="isTest ? mdiBug : mdiBugOutline"
-					@click="isTest = !isTest; setTest(isTest)">
-				</v-btn>
+			</v-btn>
+			<v-btn color="cyan" variant="text" @click="isTest = !isTest;" rounded>
+				<v-btn color="cyan" :variant="isTest ? 'elevated' : 'tonal'" :icon="isTest ? mdiBug : mdiBugOutline" />
 				测试模式
-			</div>
+			</v-btn>
 		</div>
 		<v-banner v-if="isOrientationBanner && !yetIsOrientationBanner" color="teal" :icon="mdiController" sticky
 			:style="{ zIndex: 999, top: (isShowNav ? 0 : 48) + 'px' }">
@@ -249,7 +245,7 @@ const {
 	optionalServices: ["0000ae3a-0000-1000-8000-00805f9b34fb"]
 })
 const yetIsOrientationBanner = useLocalStorage('yetIsOrientationBanner', false);
-const bleStr = ref(''), bleTimeOut = ref(0), bleLoading = ref(false), isStop = ref(false), isTest = ref(false);
+const bleTimeOut = ref(0), bleLoading = ref(false), isStop = ref(false), isTest = ref(false);
 const props = defineProps<{ gamepad: Gamepad }>()
 const pointer = computed(() => getPointer(isOrientation.value, alpha.value, rectify.value))
 // screen.orientation.addEventListener('change', e => {
@@ -318,22 +314,39 @@ function kd(deg: number, x0: number, y0: number, r: number, l: number) {
 	const xa = x0 + r * Math.sin(deg), ya = y0 - r * Math.cos(deg)
 	return `M ${xa.toFixed(n)},${ya.toFixed(n)} L ${(xa - l * Math.sin(deg)).toFixed(n)},${(ya + l * Math.cos(deg)).toFixed(n)}`
 }
-
-const power = ref({ a: 0, b: 0, c: 0, d: 0 })
+const powerValue = ref({ a: 0, b: 0, c: 0, d: 0 })
+const power = computed({
+	get() {
+		return isTest ? controllerWheel() : powerValue.value;
+	},
+	set(v: { a: number, b: number, c: number, d: number }) {
+		powerValue.value = v;
+	}
+})
+const bleStrValue = ref('')
+const bleStr = computed({
+	get() {
+		return isTest ? toHexString(getWheelData(power.value)) : bleStrValue.value;
+	},
+	set(v: string) {
+		bleStrValue.value = v;
+	}
+})
 function addPower(n: number) {
 	if (n == 0) return 0;
 	n = n > 0 ? (n * 0.5 + 0.5) : (n * 0.5 - 0.5)
 	return n > 1 ? 1 : (n < -1 ? -1 : n)
 }
-function setTest(v: boolean) {
-	if (v) resume();
-	else pause();
-}
-const { pause, resume } = useIntervalFn(() => {
-	if (!props.gamepad) return;
-	power.value = controllerWheel();
-	bleStr.value = toHexString(getWheelData(power.value))
-}, 500, { immediate: false })
+// function setTest(v: boolean) {
+// 	if (v) resume();
+// 	else pause();
+// }
+
+// const { pause, resume } = useIntervalFn(() => {
+// 	if (!props.gamepad) return;
+// 	power.value = controllerWheel();
+// 	bleStr.value = toHexString(getWheelData(power.value))
+// }, 500, { immediate: false })
 function controllerWheel() {
 	if (!isGamepadSupported || !props.gamepad) return { a: 0, b: 0, c: 0, d: 0 };
 	let x = props.gamepad.axes[0], y = props.gamepad.axes[1], rx = props.gamepad.axes[2]
@@ -362,7 +375,6 @@ function getWheelData({ a, b, c, d }: { a: number; b: number; c: number; d: numb
 		n += wheelDataInit[i];
 	}
 	wheelDataInit[l] = n;
-	console.log(wheelDataInit[l].toString(16))
 	return wheelDataInit;
 }
 const toHexString = (bytes: Uint8Array) =>
@@ -421,8 +433,9 @@ const runController = async () => {
 				server.value = undefined;
 			}
 		}
-	} catch (e) {
+	} catch (e: any) {
 		console.error(e)
+		alert(e.toString())
 	} finally {
 		bleLoading.value = false;
 	}
@@ -460,8 +473,12 @@ const runController = async () => {
 	left: 8px;
 	z-index: 9999;
 
-	&>div {
+	&>button {
+		display: block;
 		margin-bottom: 8px;
+		padding-left: 0;
+		height: auto;
+		backdrop-filter: blur(5px);
 	}
 }
 
