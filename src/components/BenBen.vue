@@ -7,7 +7,7 @@
 					<template v-slot:prepend>
 						<v-icon class="prepend" :icon="isOrientation ? mdiCompass : mdiCompassOffOutline"></v-icon>
 					</template>
-					{{ isOrientation?'感知中': '开启移动设备感知方向' }}
+					{{ isOrientation ? '感知中' : '开启移动设备感知方向' }}
 				</v-btn>
 				<v-btn v-if="isOrientation" variant="tonal" color="teal" @click="setRectify">
 					<template v-slot:prepend>
@@ -29,7 +29,7 @@
 				@click="isOrientation = !isOrientation; setRectify(); isOrientationBanner = isOrientation">
 				<v-btn color="teal" :variant="isOrientation ? 'elevated' : 'tonal'"
 					:icon="isOrientation ? mdiCompass : mdiCompassOffOutline" />
-				{{ isOrientation?'感知中': '开启移动设备感知方向' }}
+				{{ isOrientation ? '感知中' : '开启移动设备感知方向' }}
 			</v-btn>
 			<v-btn v-if="isOrientation" variant="text" color="teal" @click="setRectify" rounded>
 				<v-btn variant="tonal" color="teal" :icon="mdiGamepadCircleDown" />
@@ -53,8 +53,8 @@
 			</v-banner-actions>
 		</v-banner>
 		<v-row no-gutters align="center" justify="center" class="benben">
-			<svg width="100%" height="100%" viewBox="0 0 264.58333 264.58333" version="1.1" id="benben"
-				class="text-info" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+			<svg width="100%" height="100%" viewBox="0 0 264.58333 264.58333" version="1.1" id="benben" class="text-info"
+				xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
 				<g class="platform"
 					:transform="`translate(132.29167, 132.29167) rotate(${offset - angle}) translate(-132.29167, -132.29167)`">
 					<g id="benben" transform="translate(0.40443142,28.494763)" style="display:inline">
@@ -97,30 +97,28 @@
 						<g class="phone text-teal" v-if="isOrientation">
 							<g id="portrait" v-if="offset == 90 || offset == 270"
 								transform="matrix(0.5,0,0,0.5,55.153247,37.651075)">
-								<rect class="phone-back" width="50.440094" height="124.55617" x="78.576714"
-									y="-223.54903" ry="3.7744291" transform="matrix(0,2,-2,0,-110.30649,-75.302152)" />
+								<rect class="phone-back" width="50.440094" height="124.55617" x="78.576714" y="-223.54903"
+									ry="3.7744291" transform="matrix(0,2,-2,0,-110.30649,-75.302152)" />
 								<rect style="fill:currentColor;stroke:none;" width="20.368849" height="38.360516"
 									x="231.85388" y="113.1114" ry="3.54285" class="text-success" />
 								<circle style="fill:#ffffff;stroke:none;" cx="245.05838" cy="123.7243" r="3.3361554" />
 								<path style="fill:none;stroke:#ffffff;stroke-width:1.32292"
 									d="m 235.7339,146.18004 4.85254,-9.34112 m -4.85253,-18.43573 4.8526,9.34124" />
 
-								<circle style="fill:#ffffff;stroke:none;" cx="245.05838" cy="140.859016"
-									r="3.3361554" />
+								<circle style="fill:#ffffff;stroke:none;" cx="245.05838" cy="140.859016" r="3.3361554" />
 								<!-- <circle style="fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:0.512943;"
 								id="path14357" cx="212.23537" cy="132.29166" r="45.156609" /> -->
 								<path :d="getP2(212.23537, 132.29166, 45.156609)" class="scale text-info" />
 							</g>
 							<g id="landscape" v-else transform="matrix(0.5,0,0,0.5,92.211445,37.651075)">
-								<rect class="phone-back" width="50.440166" height="124.55634" x="173.10904"
-									y="41.518723" ry="3.7744346" transform="matrix(2,0,0,2,-184.42289,-75.302152)" />
+								<rect class="phone-back" width="50.440166" height="124.55634" x="173.10904" y="41.518723"
+									ry="3.7744346" transform="matrix(2,0,0,2,-184.42289,-75.302152)" />
 								<rect style="fill:currentColor;stroke:none;" width="20.368849" height="38.360516"
 									x="231.85362" y="113.1114" ry="3.54285" class="text-success" />
 								<circle style="fill:#ffffff;stroke:none;" cx="245.05812" cy="123.7243" r="3.3361554" />
 								<path style="fill:none;stroke:#ffffff;stroke-width:1.32292"
 									d="m 235.73364,146.18004 4.85254,-9.34112 m -4.85253,-18.43573 4.8526,9.34124" />
-								<circle style="fill:#ffffff;stroke:none;" cx="245.05838" cy="140.859016"
-									r="3.3361554" />
+								<circle style="fill:#ffffff;stroke:none;" cx="245.05838" cy="140.859016" r="3.3361554" />
 								<!-- <circle style="fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:0.512943;"
 								id="circle14369" cx="212.23537" cy="132.29166" r="45.156609" /> -->
 								<path :d="getP2(212.23537, 132.29166, 45.156609)" class="scale text-info" />
@@ -165,8 +163,8 @@
 					</g>
 
 
-					<g id="right" transform="matrix(-1,0,0,1,266.17083,0)"
-						:class="rumAngle[2] == offset && 'text-success'" @click="offset = rumAngle[2]">
+					<g id="right" transform="matrix(-1,0,0,1,266.17083,0)" :class="rumAngle[2] == offset && 'text-success'"
+						@click="offset = rumAngle[2]">
 						<rect style="fill:currentColor;stroke:none" width="20.368849" height="38.360516" x="238.25932"
 							y="113.1114" ry="3.54285" />
 						<circle style="fill:#ffffff;stroke:none;" cx="251.46382" cy="123.7243" r="3.3361554" />
@@ -174,8 +172,8 @@
 							d="m 242.13934,146.18004 4.85254,-9.34112 m -4.85253,-18.43573 4.8526,9.34124" />
 						<circle style="fill:#ffffff;stroke:none;" cx="251.46382" cy="140.859016" r="3.3361554" />
 					</g>
-					<g id="top" transform="rotate(-90,133.08542,133.08541)"
-						:class="rumAngle[3] == offset && 'text-success'" @click="offset = rumAngle[3]">
+					<g id="top" transform="rotate(-90,133.08542,133.08541)" :class="rumAngle[3] == offset && 'text-success'"
+						@click="offset = rumAngle[3]">
 						<rect style="fill:currentColor;stroke:none" width="20.368849" height="38.360516" x="238.25932"
 							y="113.1114" ry="3.54285" />
 						<circle style="fill:#ffffff;stroke:none;" cx="251.46382" cy="123.7243" r="3.3361554" />
@@ -193,8 +191,8 @@
 						<circle style="fill:#ffffff;stroke:none;" cx="251.46382" cy="140.859016" r="3.3361554" />
 					</g>
 				</g>
-				<text v-if="isOrientation" x="132.29167" y="50" text-anchor="middle">{{((alpha || 0) -
-				rectify).toFixed(1)}}°</text>
+				<text v-if="isOrientation" x="132.29167" y="50" text-anchor="middle">{{ ((alpha || 0) -
+					rectify).toFixed(1) }}°</text>
 				<text v-if="isConnected || isTest" x="132.29167" y="224.58334" text-anchor="middle"
 					style="font-size: 10px;">{{ bleStr }}</text>
 
@@ -216,12 +214,14 @@
 				</v-alert>
 			</div>
 		</v-row>
+		<sensor v-if="isOrientation" @z="setZ"/>
 	</div>
 </template>
 
 <script setup lang="ts" name="BenBen">
 import { useScreenOrientation, useDeviceOrientation, useBluetooth, pausableWatch, useTimeoutFn, useIntervalFn, useLocalStorage, useWindowSize } from '@vueuse/core'
 import { mdiController, mdiGamepadCircleDown, mdiAlphaACircleOutline, mdiCellphone, mdiCompassOffOutline, mdiBugOutline, mdiCompass, mdiBug } from '@mdi/js'
+import Sensor from './Sensor.vue';
 const isGamepadSupported = typeof (navigator.getGamepads) === 'function'
 const { angle } = useScreenOrientation()
 const { width, height } = useWindowSize()
@@ -230,7 +230,10 @@ const isShowNav = computed(() => {
 	if (height.value >= (width.value + 48 * 2)) return false;
 	return true;
 })
-const { alpha } = useDeviceOrientation()
+const { alpha:alphaDO } = useDeviceOrientation(),alphaZ=ref(0),setZ=(e:number)=>{
+	alphaZ.value=e;
+}
+const alpha=computed(()=>(alphaDO.value||0)-alphaZ.value)
 const {
 	isSupported: isBluetoothSupported,
 	isConnected,

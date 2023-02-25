@@ -4,7 +4,7 @@
 	"homepage": "https://gitlab.com/huhuime/benben-gamepad-control",
 	"author": "huhuime<huhuime@outlook.com>",
 	"private": true,
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
