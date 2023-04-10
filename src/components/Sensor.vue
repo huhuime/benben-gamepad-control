@@ -1,6 +1,6 @@
 <template>
 	<div class="sensor">
-		<v-btn color="teal" :variant="isConnected ? 'tonal' : 'text'" rounded @click="connectSensor" >
+		<v-btn color="teal" :variant="isConnected ? 'tonal' : 'text'" rounded @click="connectSensor">
 			{{ isConnected ? device?.name : '添加传感器' }}
 			<v-btn color="teal" :variant="isConnected ? 'elevated' : 'tonal'" :icon="mdiRotateOrbit" :loading="isLoading" />
 		</v-btn>
@@ -19,7 +19,7 @@ const config = {
 	connected: 0x29,//保持连接
 	sensorData: {
 		prefix: 0x11,//传感数据头,
-		eulerAnglesZ: 7 + 4,//欧拉角Z数据起始位置
+		eulerAnglesZslice: [7 + 4, 7 + 4 + 2],//欧拉角Z数据起始位置
 		eulerAngles: 0.0054931640625,//转换为度数
 		clockwise: -1,//顺时针旋转增加值：1，逆时针旋转增加值：-1
 	},
@@ -33,7 +33,7 @@ const config = {
 	},
 	close: 0x2b//断开连接
 }, isLoading = ref(false), connectSensor = () => {
-	if (isConnected.value||isLoading.value) return;
+	if (isConnected.value || isLoading.value) return;
 	isLoading.value = true;
 	requestDevice().then(e => { if (!device.value) isLoading.value = false }).catch(() => isLoading.value = false);
 };
@@ -70,13 +70,13 @@ async function run() {
 			const characteristic = (event.target as BluetoothRemoteGATTCharacteristic), v = characteristic.value;
 			if (!v) return;
 			const type = v.getInt8(0)
-			if (type == 0x11) {
-				if (v.byteLength <= 7) {
+			if (type == config.sensorData.prefix) {
+				if (v.byteLength < config.sensorData.eulerAnglesZslice[1]) {
 					//w?.writeValueWithoutResponse(new Uint8Array([0x10]))
-					console.log('noData', v)
+					console.log('errData', v)
 					return;
 				} else {
-					const t0 = new Uint16Array(v.buffer.slice(1, 3)), t1 = new Int16Array(v.buffer.slice(7)), x = t1[0] * 0.0054931640625, y = t1[1] * 0.0054931640625, z = t1[2] * 0.0054931640625;
+					const z = new Int16Array(v.buffer.slice(config.sensorData.eulerAnglesZslice[0], config.sensorData.eulerAnglesZslice[1]))[0] * config.sensorData.eulerAngles;
 					emit('z', z)
 					//console.log('11Data', t0[0].toString(2), new Uint32Array(v.buffer.slice(3, 7))[0], z, toHexString(new Uint8Array(v.buffer)))
 					return;
@@ -86,11 +86,14 @@ async function run() {
 			const data = new Uint8Array(v.buffer)
 			console.log(toHexString(data))
 			switch (type) {
-				case 0x10:
-					const t = data.slice(0, 11)
-					t[9] = 0x40;
-					t[10] = 0;
-					t[0] = 0x12
+				case config.configData.prefix:
+					const t = data.slice(...config.configData.send.slice)
+					//t[9] = 0x40;
+					//t[10] = 0;
+					for (let item of config.configData.send.data) {
+						t[item[0]] = item[1]
+					}
+					t[0] = config.configData.send.prefix;
 					w?.writeValueWithoutResponse(t)
 			}
 			//console.log(v.buffer)
@@ -98,7 +101,7 @@ async function run() {
 			//characteristic?.readValue().then(e=>console.log);
 
 		})
-		await n?.startNotifications().then(() => w?.writeValueWithoutResponse(new Uint8Array([0x10])));
+		await n?.startNotifications().then(() => w?.writeValueWithoutResponse(new Uint8Array([config.configData.prefix])));
 	} catch (e: any) {
 		console.error(e)
 		alert(e.toString())
